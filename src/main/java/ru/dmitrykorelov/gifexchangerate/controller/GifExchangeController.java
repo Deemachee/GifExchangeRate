@@ -3,8 +3,6 @@ package ru.dmitrykorelov.gifexchangerate.controller;
 import org.springframework.web.bind.annotation.*;
 import ru.dmitrykorelov.gifexchangerate.exceptionhandler.GifExchangeException;
 import ru.dmitrykorelov.gifexchangerate.service.GifExchangeService;
-
-import java.io.IOException;
 import java.util.Map;
 
 @RestController

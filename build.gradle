@@ -13,6 +13,13 @@ repositories {
     mavenCentral()
 }
 
+docker {
+    name "gif_exchange"
+    dockerfile file('Dockerfile')
+    copySpec.from(jar).rename(".*", "app.jar")
+    buildArgs(['JAR_FILE': "app.jar"])
+}
+
 dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter'

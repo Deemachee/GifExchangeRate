@@ -22,9 +22,19 @@ Stack:
 - Java 11
 - Spring Boot 
 - Spring Cloud(OpenFeign)
-- JUnit 5
+- JUnit 5, Mockito
 
 Endpoint:
 - Localhost:8080/get/{currency}      ,где currency - код валюты в международном
-обозначении, пишется большими буквами. Пример:
-  Localhost:8080/get/RUB
+обозначении, пишется большими буквами. Пример: " Localhost:8080/get/RUB "
+- Пример получаемого ответа: {"Rich gif":"https://media4.giphy.com/media/GxOHKnON7G2oE/
+giphy.gif?cid=36ae8e1710ad6553bd8959d56b2b085511dd12e2962a5b77&rid=giphy.gif&ct=g"}
+
+Все доступные обозначения валют можно посмотреть по ссылке:
+https://openexchangerates.org/api/currencies.json
+
+Запуск Jar в консоли:
+java -jar build/libs/GifExchangeRate-0.0.1-SNAPSHOT.jar
+
+Pull Docker image (в консоли/терминале):
+docker pull deemachee/gif_exchange:1.0

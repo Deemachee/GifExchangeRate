@@ -3,7 +3,9 @@ package ru.dmitrykorelov.gifexchangerate.controller;
 import org.springframework.web.bind.annotation.*;
 import ru.dmitrykorelov.gifexchangerate.exceptionhandler.GifExchangeException;
 import ru.dmitrykorelov.gifexchangerate.service.GifExchangeService;
+
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/get")
@@ -15,8 +17,8 @@ public class GifExchangeController {
         this.service = service;
     }
 
-        @GetMapping("/{cur}")
-    public String getGif(@PathVariable("cur") String cur) throws IOException, GifExchangeException {
+    @GetMapping("/{cur}")
+    public Map<String, String> getGif(@PathVariable("cur") String cur) throws GifExchangeException {
         return service.getGifWithCurrency(cur);
     }
 

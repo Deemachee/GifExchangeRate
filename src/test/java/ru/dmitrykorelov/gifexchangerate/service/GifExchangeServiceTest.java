@@ -2,15 +2,22 @@ package ru.dmitrykorelov.gifexchangerate.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.dmitrykorelov.gifexchangerate.exceptionhandler.GifExchangeException;
 import ru.dmitrykorelov.gifexchangerate.feighclient.ExchangeRateClient;
-import ru.dmitrykorelov.gifexchangerate.feighclient.GifClient;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -22,12 +29,51 @@ public class GifExchangeServiceTest {
     GifExchangeService service;
 
     @MockBean
-    GifClient gifClient;
-
-    @MockBean
     ExchangeRateClient exchangeRateClient;
 
-    //проверяем работу метода по поиску нужного курса
+    //сравниваем результат выполнения метода поиска курса валюты на текущую дату и ручного запроса на апи сайта
+    @Test
+    public void exchangeRateTodayTest() throws IOException {
+        String url = "https://openexchangerates.org/api/latest.json?app_id=" +
+                "5fdb649018c94e6ca8c36349f69a9da8&symbols=RUB";
+        String text = getHttpRequest(url);
+        Mockito.when(exchangeRateClient.currencyToday("RUB")).thenReturn(text);
+    }
+
+    //сравниваем результат выполнения метода поиска курса валюты на дату 2022-06-01 и ручного запроса на апи сайта
+    @Test
+    public void exchangeRateYesterdayTest() throws IOException {
+        String initDate = "%04d-%02d-%02d";
+        Calendar date = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        date.set(2022, Calendar.JUNE, 1);
+        int day = date.get(Calendar.DAY_OF_MONTH);
+        int month = date.get(Calendar.MONTH) + 1;
+        int year = date.get(Calendar.YEAR);
+        String historical = String.format(initDate, year, month, day);
+        System.out.println(historical);
+        String url = "https://openexchangerates.org/api/historical/2022-06-01" +
+                ".json?app_id=5fdb649018c94e6ca8c36349f69a9da8&symbols=RUB";
+        String text = getHttpRequest(url);
+        Mockito.when(exchangeRateClient.currencyYesterday(historical, "RUB")).thenReturn(text);
+    }
+
+
+    //метод для ручного запроса на апи сайта обмена валют
+    public String getHttpRequest(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                StandardCharsets.UTF_8));
+        StringBuilder builder = new StringBuilder();
+        int byteRead;
+        while ((byteRead = buffer.read()) != -1) {
+            builder.append((char) byteRead);
+        }
+        buffer.close();
+        return builder.toString();
+    }
+
+    //проверяем работу метода по поиску нужного курса из Json в виде строки
     @Test
     public void findExchangeRateFromJsonTest() throws GifExchangeException {
         String json = "{\"license\":\"https://openexchangerates.org/license\",\"" +
@@ -41,7 +87,7 @@ public class GifExchangeServiceTest {
                 .compareTo(BigDecimal.valueOf(447.269866)));
     }
 
-    //проверяем работу метода по поиску гифки
+    //проверяем работу метода по поиску url гифки из Json в виде строки
     @Test
     public void findUrlFromGiphyJsonTest() throws GifExchangeException {
         String json = "{\"data\":{\"type\":\"gif\",\"id\":\"5C3Zrs5xUg5fHV4Kcf\",\"url\":\"" +
@@ -54,16 +100,9 @@ public class GifExchangeServiceTest {
 
         String expUrl = "https://media3.giphy.com/media/5C3Zrs5xUg5fHV4Kcf/giphy.gif?cid=" +
                 "36ae8e177833fd86a07cffb1b46d62fa3e21d6185c1c2f5d&rid=giphy.gif&ct=g";
-        String  findUrl = service.findUrlFromGiphyJson(json);
+        String findUrl = service.findUrlFromGiphyJson(json);
         assertNotNull(findUrl);
         assertEquals(expUrl, findUrl);
     }
-
-    @Test
-    public void getGifTest() {
-
-
-
-    }
-
 }
+

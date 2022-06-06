@@ -43,13 +43,13 @@ public class GifExchangeService {
         }
     }
 
-    //получаем текущий курс валюты из аргумента
+    //получаем текущий курс валюты из Json, полученного по запросу у клиента курса валют, соответсвующего аргументу
     public BigDecimal exchangeRateToday(String currency) throws GifExchangeException {
         String rateToday = exchangeRateClient.currencyToday(currency);
         return findExchangeRateFromJson(rateToday).get(currency);
     }
 
-    //получаем вчерашний курс валюты из аргумента
+    //получаем вчерашний курс валюты из из Json, полученного по запросу у клиента курса валют, соответсвующего аргументу
     public BigDecimal exchangeRateYesterday(String currency) throws GifExchangeException {
         String initDate = "%04d-%02d-%02d";
         Calendar date = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -74,19 +74,25 @@ public class GifExchangeService {
     }
 
     //сравниваем курс валюты по отношению к вчерашнему, и присылаем в ответ ссылку на гифку
-    public String getGifWithCurrency(String currency) throws GifExchangeException {
+    public Map<String, String> getGifWithCurrency(String currency) throws GifExchangeException {
+        Map<String, String> urlMap = new HashMap<>();
+        String result;
         BigDecimal today = exchangeRateToday(currency);
         BigDecimal yesterday = exchangeRateYesterday(currency);
         int dif = today.compareTo(yesterday);
         String jsonString;
         if (dif > 0) {
+            result = "Broke gif";
             jsonString = gifClient.getBrokeGif();
         } else if (dif < 0) {
+            result = "Rich gif";
             jsonString = gifClient.getRichGif();
         } else {
+            result = "Stability gif";
             jsonString = gifClient.getStabilityGif();
         }
-        return findUrlFromGiphyJson(jsonString);
+        urlMap.put(result, findUrlFromGiphyJson(jsonString));
+        return urlMap;
     }
 
 }
